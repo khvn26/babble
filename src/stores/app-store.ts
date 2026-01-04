@@ -1,50 +1,27 @@
-import { create } from "zustand";
+﻿import { create } from "zustand";
+import { createMockTransport } from "../transports/mock-transport";
+import type { TransportState } from "../transports/types";
 
-export type ConnState = "disconnected" | "connecting" | "connected" | "error";
-
-export type Channel = { id: number; name: string; parentId?: number };
-export type User = {
-    id: number;
-    name: string;
-    channelId: number;
-    talking?: boolean;
-    muted?: boolean;
-    deafened?: boolean;
+type AppState = TransportState & {
+  connect: (server: string) => Promise<void>;
+  disconnect: () => Promise<void>;
+  selectChannel: (channelId: number) => Promise<void>;
+  toggleMute: () => Promise<void>;
+  toggleDeafen: () => Promise<void>;
 };
 
-type AppState = {
-    connState: ConnState;
-    currentServer?: string;
-    currentChannelId?: number;
+const transport = createMockTransport();
 
-    me: { muted: boolean; deafened: boolean };
-    channels: Channel[];
-    users: User[];
+export const useAppStore = create<AppState>((set, get) => {
+  const initial = transport.getState();
+  transport.subscribe((state) => set(state));
 
-    setConnState: (s: ConnState) => void;
-    setCurrent: (server: string, channelId?: number) => void;
-    toggleMute: () => void;
-    toggleDeafen: () => void;
-};
-
-export const useAppStore = create<AppState>((set) => ({
-    connState: "disconnected",
-    me: { muted: false, deafened: false },
-    channels: [
-        { id: 1, name: "Lobby" },
-        { id: 2, name: "Gaming" },
-        { id: 3, name: "AFK" },
-    ],
-    users: [
-        { id: 1, name: "You", channelId: 1 },
-        { id: 2, name: "Alex", channelId: 1, talking: true },
-        { id: 3, name: "Sam", channelId: 2 },
-    ],
-
-    setConnState: (connState) => set({ connState }),
-    setCurrent: (currentServer, currentChannelId) =>
-        set({ currentServer, currentChannelId }),
-    toggleMute: () => set((s) => ({ me: { ...s.me, muted: !s.me.muted } })),
-    toggleDeafen: () =>
-        set((s) => ({ me: { ...s.me, deafened: !s.me.deafened } })),
-}));
+  return {
+    ...initial,
+    connect: (server) => transport.connect({ server }),
+    disconnect: () => transport.disconnect(),
+    selectChannel: (channelId) => transport.joinChannel(channelId),
+    toggleMute: () => transport.setMute(!get().me.muted),
+    toggleDeafen: () => transport.setDeafen(!get().me.deafened),
+  };
+});

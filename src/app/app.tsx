@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+﻿import { useMemo } from "react";
 import { useAppStore } from "../stores/app-store";
 
 function Pill({ children }: { children: React.ReactNode }) {
@@ -10,10 +10,21 @@ function Pill({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  const { connState, channels, users, me, toggleMute, toggleDeafen, setConnState } =
-    useAppStore();
+  const {
+    channels,
+    connect,
+    connState,
+    currentChannelId,
+    currentServer,
+    disconnect,
+    me,
+    selectChannel,
+    toggleDeafen,
+    toggleMute,
+    users,
+  } = useAppStore();
 
-  const [selectedChannelId, setSelectedChannelId] = useState<number>(1);
+  const selectedChannelId = currentChannelId ?? channels[0]?.id ?? 0;
 
   const usersHere = useMemo(
     () => users.filter((u) => u.channelId === selectedChannelId),
@@ -35,7 +46,7 @@ export default function App() {
         {/* Channels */}
         <section className="border-r border-white/10 flex flex-col">
           <div className="p-3 border-b border-white/10 flex items-center justify-between">
-            <div className="font-semibold">Server Name</div>
+            <div className="font-semibold">{currentServer ?? "Server Name"}</div>
             <Pill>{connState}</Pill>
           </div>
 
@@ -52,7 +63,7 @@ export default function App() {
               return (
                 <button
                   key={c.id}
-                  onClick={() => setSelectedChannelId(c.id)}
+                  onClick={() => selectChannel(c.id)}
                   className={[
                     "w-full rounded-lg px-3 py-2 text-left text-sm",
                     active ? "bg-white/10" : "hover:bg-white/5",
@@ -92,7 +103,7 @@ export default function App() {
               </button>
               <button
                 onClick={() =>
-                  setConnState(connState === "connected" ? "disconnected" : "connected")
+                  connState === "connected" ? disconnect() : connect("localhost")
                 }
                 className="rounded-lg bg-white/5 px-3 py-2 text-xs ring-1 ring-white/10 hover:bg-white/10"
               >
@@ -144,4 +155,3 @@ export default function App() {
     </div>
   );
 }
-
