@@ -1,0 +1,82 @@
+[env]
+OPENSSL_NO_VENDOR = "1"
+OPENSSL_PREBUILT_DIR = "C:\\Program Files\\OpenSSL-Win64"
+OPENSSL_DIR = "${OPENSSL_PREBUILT_DIR}"
+
+[tasks.ensure-openssl]
+description = "Validate the prebuilt OpenSSL install path."
+script_runner = "powershell"
+script = [
+  "if (-not (Test-Path $env:OPENSSL_DIR)) { throw \"OpenSSL not found at $env:OPENSSL_DIR\" }",
+]
+
+[tasks.install-openssl-prebuilt]
+description = "Install prebuilt OpenSSL silently via winget (Shining Light OpenSSL Light)."
+script_runner = "powershell"
+script = [
+  "winget install -e --id ShiningLight.OpenSSL.Light --silent --accept-source-agreements --accept-package-agreements --disable-interactivity",
+  "Write-Host \"OpenSSL installed to $env:OPENSSL_PREBUILT_DIR\"",
+]
+
+[tasks.web-install]
+description = "Install frontend dependencies."
+script_runner = "powershell"
+script = ["npm install"]
+
+[tasks.web-build]
+description = "Build the frontend bundle."
+script_runner = "powershell"
+script = ["npm run build"]
+
+[tasks.web-lint]
+description = "Lint frontend sources."
+script_runner = "powershell"
+script = ["npm run lint"]
+
+[tasks.web-test]
+description = "Run frontend tests when present."
+script_runner = "powershell"
+script = ["npm test --if-present"]
+
+[tasks.web-dev]
+description = "Run the frontend dev server."
+script_runner = "powershell"
+script = ["npm run dev"]
+
+[tasks.tauri-lint]
+description = "Run Rust formatting and clippy checks for Tauri."
+script_runner = "powershell"
+cwd = "src-tauri"
+dependencies = ["ensure-openssl"]
+script = ["cargo fmt -- --check", "cargo clippy -- -D warnings"]
+
+[tasks.tauri-test]
+description = "Run Rust coverage tests for Tauri."
+script_runner = "powershell"
+cwd = "src-tauri"
+dependencies = ["ensure-openssl"]
+script = ["cargo llvm-cov --features coverage --fail-under-lines 100"]
+
+[tasks.tauri-build]
+description = "Build the Tauri app."
+script_runner = "powershell"
+dependencies = ["ensure-openssl"]
+script = ["cargo tauri build"]
+
+[tasks.tauri-dev]
+description = "Run the Tauri dev app."
+script_runner = "powershell"
+dependencies = ["ensure-openssl"]
+script = ["cargo tauri dev"]
+
+[tasks.tauri-ci]
+description = "Run Tauri lint, build, and tests."
+dependencies = ["tauri-lint", "tauri-build", "tauri-test"]
+
+[tasks.web-ci]
+description = "Run frontend lint, test, and build."
+dependencies = ["web-lint", "web-test", "web-build"]
+
+[tasks.ci]
+description = "Run all CI checks."
+dependencies = ["tauri-ci", "web-ci"]

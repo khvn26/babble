@@ -21,8 +21,12 @@ tauri-build = { version = "2.5.3", features = [] }
 coverage = []
 
 [dependencies]
-serde_json = "1.0"
-serde = { version = "1.0", features = ["derive"] }
+bytes = "1.10"
 log = "0.4"
+mumble-protocol-2x = "0.6.0"
+openssl = { version = "0.10", features = ["vendored"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 tauri = { version = "2.9.5", features = [] }
 tauri-plugin-log = "2"
+tokio-util = { version = "0.7", features = ["codec"] }

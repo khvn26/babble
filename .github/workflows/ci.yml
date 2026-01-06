@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  node-build:
+  node:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,7 +16,7 @@ jobs:
       - run: npm ci
       - run: npm run ci
 
-  tauri-build:
+  tauri:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,22 +25,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: |
-            src-tauri
-      - run: npm ci
-      - run: npm run tauri:build
-
-  tauri-test:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: davidB/rust-cargo-make@v1
+      - uses: arduino/setup-protoc@v3
       - uses: taiki-e/install-action@cargo-llvm-cov
       - uses: Swatinem/rust-cache@v2
         with:
@@ -49,5 +35,5 @@ jobs:
           cache-targets: true
           cache-directories: |
             src-tauri/target/llvm-cov-target
-      - run: npm ci
-      - run: npm run tauri:test
+      - run: cargo make lint
+      - run: cargo make test

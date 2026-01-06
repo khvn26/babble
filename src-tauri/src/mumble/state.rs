@@ -88,41 +88,62 @@ impl StateCache {
     pub fn apply_user_remove(&mut self, id: u32) {
         self.users.remove(&id);
     }
+
+    pub fn channels(&self) -> Vec<Channel> {
+        let mut channels = self.channels.values().cloned().collect::<Vec<_>>();
+        channels.sort_by_key(|channel| channel.id);
+        channels
+    }
+
+    pub fn users(&self) -> Vec<User> {
+        let mut users = self.users.values().cloned().collect::<Vec<_>>();
+        users.sort_by_key(|user| user.id);
+        users
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::{ChannelStateUpdate, StateCache, UserStateUpdate};
 
+    /// Channel updates create and then update cached channel data.
     #[test]
     fn channel_state_adds_and_updates() {
+        // Arrange
         let mut cache = StateCache::new();
 
+        // Act
         cache.apply_channel_state(ChannelStateUpdate {
             id: 1,
             name: Some(String::from("Lobby")),
             parent_id: None,
         });
 
+        // Assert
         let channel = cache.channel(1).expect("channel missing");
         assert_eq!(channel.name, "Lobby");
         assert_eq!(channel.parent_id, None);
 
+        // Act
         cache.apply_channel_state(ChannelStateUpdate {
             id: 1,
             name: Some(String::from("Main")),
             parent_id: Some(2),
         });
 
+        // Assert
         let channel = cache.channel(1).expect("channel missing");
         assert_eq!(channel.name, "Main");
         assert_eq!(channel.parent_id, Some(2));
     }
 
+    /// User updates populate fields and apply subsequent changes.
     #[test]
     fn user_state_adds_and_updates() {
+        // Arrange
         let mut cache = StateCache::new();
 
+        // Act
         cache.apply_user_state(UserStateUpdate {
             id: 10,
             name: Some(String::from("Alice")),
@@ -132,12 +153,14 @@ mod tests {
             talking: Some(false),
         });
 
+        // Assert
         let user = cache.user(10).expect("user missing");
         assert_eq!(user.name, "Alice");
         assert_eq!(user.channel_id, 1);
         assert!(!user.muted);
         assert!(!user.deafened);
 
+        // Act
         cache.apply_user_state(UserStateUpdate {
             id: 10,
             name: None,
@@ -147,6 +170,7 @@ mod tests {
             talking: Some(true),
         });
 
+        // Assert
         let user = cache.user(10).expect("user missing");
         assert_eq!(user.name, "Alice");
         assert_eq!(user.channel_id, 2);
@@ -155,10 +179,45 @@ mod tests {
         assert!(user.talking);
     }
 
+    /// Missing flags do not overwrite prior values when updates are partial.
     #[test]
-    fn user_remove_deletes_user() {
+    fn user_state_ignores_missing_flags() {
+        // Arrange
         let mut cache = StateCache::new();
 
+        // Act
+        cache.apply_user_state(UserStateUpdate {
+            id: 12,
+            name: Some(String::from("Pat")),
+            channel_id: Some(1),
+            muted: Some(false),
+            deafened: Some(true),
+            talking: Some(false),
+        });
+
+        cache.apply_user_state(UserStateUpdate {
+            id: 12,
+            name: None,
+            channel_id: None,
+            muted: None,
+            deafened: None,
+            talking: None,
+        });
+
+        // Assert
+        let user = cache.user(12).expect("user missing");
+        assert!(!user.muted);
+        assert!(user.deafened);
+        assert!(!user.talking);
+    }
+
+    /// Removing a user deletes the cached entry.
+    #[test]
+    fn user_remove_deletes_user() {
+        // Arrange
+        let mut cache = StateCache::new();
+
+        // Act
         cache.apply_user_state(UserStateUpdate {
             id: 11,
             name: Some(String::from("Eve")),
@@ -168,9 +227,57 @@ mod tests {
             talking: None,
         });
 
+        // Assert
         assert!(cache.user(11).is_some());
 
+        // Act
         cache.apply_user_remove(11);
+        // Assert
         assert!(cache.user(11).is_none());
+    }
+
+    /// Channel and user snapshots are sorted by identifier.
+    #[test]
+    fn channels_and_users_return_sorted_snapshots() {
+        // Arrange
+        let mut cache = StateCache::new();
+
+        // Act
+        cache.apply_channel_state(ChannelStateUpdate {
+            id: 2,
+            name: Some(String::from("Second")),
+            parent_id: None,
+        });
+        cache.apply_channel_state(ChannelStateUpdate {
+            id: 1,
+            name: Some(String::from("First")),
+            parent_id: None,
+        });
+
+        cache.apply_user_state(UserStateUpdate {
+            id: 20,
+            name: Some(String::from("Zed")),
+            channel_id: Some(1),
+            muted: Some(false),
+            deafened: Some(false),
+            talking: Some(false),
+        });
+        cache.apply_user_state(UserStateUpdate {
+            id: 10,
+            name: Some(String::from("Ann")),
+            channel_id: Some(1),
+            muted: Some(false),
+            deafened: Some(false),
+            talking: Some(false),
+        });
+
+        // Assert
+        let channels = cache.channels();
+        assert_eq!(channels[0].id, 1);
+        assert_eq!(channels[1].id, 2);
+
+        let users = cache.users();
+        assert_eq!(users[0].id, 10);
+        assert_eq!(users[1].id, 20);
     }
 }

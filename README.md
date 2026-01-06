@@ -66,3 +66,4 @@ State:
 
 - Run coverage tests: `npm run tauri:test`
 - Coverage uses the Cargo feature `coverage` to avoid running the Tauri runtime in unit tests.
+- `mumble-protocol-2x` requires `protoc` on PATH (install it before running `npm run tauri:ci`).

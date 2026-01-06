@@ -17,13 +17,21 @@ fn main() {
 mod tests {
     use super::app_main;
 
+    /// Calling the app entry helper does not panic.
     #[test]
     fn app_main_is_callable() {
+        // Arrange
+        // Act
         app_main();
+        // Assert
     }
 
+    /// Calling the top-level main does not panic.
     #[test]
     fn main_is_callable() {
+        // Arrange
+        // Act
         super::main();
+        // Assert
     }
 }

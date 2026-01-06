@@ -4,17 +4,17 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "build": "tsc -b && vite build",
     "ci": "npm run lint && npm test --if-present && npm run build",
     "dev": "vite",
-    "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "tauri": "tauri",
-    "tauri:ci": "npm run tauri:lint && npm run tauri:build && npm run tauri:test",
+    "tauri:build": "cargo make build",
+    "tauri:ci": "cargo make ci",
     "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build",
-    "tauri:lint": "cargo fmt --manifest-path src-tauri/Cargo.toml -- --check && cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings",
-    "tauri:test": "cargo llvm-cov --manifest-path src-tauri/Cargo.toml --features coverage --fail-under-lines 100"
+    "tauri:lint": "cargo make lint",
+    "tauri:test": "cargo make test",
+    "tauri": "tauri"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
