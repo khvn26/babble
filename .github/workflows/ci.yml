@@ -13,8 +13,8 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      - run: npm ci
-      - run: npm run ci
+      - uses: davidB/rust-cargo-make@v1
+      - run: cargo make web-ci
 
   tauri:
     runs-on: windows-latest
@@ -35,5 +35,4 @@ jobs:
           cache-targets: true
           cache-directories: |
             src-tauri/target/llvm-cov-target
-      - run: cargo make lint
-      - run: cargo make test
+      - run: cargo make ci
