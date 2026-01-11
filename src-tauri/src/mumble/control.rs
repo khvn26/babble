@@ -41,6 +41,15 @@ pub struct ControlHandshake {
     pub session: Option<Box<dyn ControlSession>>,
 }
 
+impl std::fmt::Debug for ControlHandshake {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ControlHandshake")
+            .field("messages", &self.messages)
+            .field("session_present", &self.session.is_some())
+            .finish()
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct HandshakeRequest {
     pub server: String,
