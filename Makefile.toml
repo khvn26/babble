@@ -1,5 +1,5 @@
 [env]
-OPENSSL_NO_VENDOR = "1"
+OPENSSL_NO_VENDOR = "0"
 OPENSSL_PREBUILT_DIR = "C:\\Program Files\\OpenSSL-Win64"
 OPENSSL_DIR = "${OPENSSL_PREBUILT_DIR}"
 
@@ -7,7 +7,7 @@ OPENSSL_DIR = "${OPENSSL_PREBUILT_DIR}"
 description = "Validate the prebuilt OpenSSL install path."
 script_runner = "cmd"
 script = [
-  "if exist \"%OPENSSL_DIR%\" (echo OpenSSL found at %OPENSSL_DIR%) else (echo OpenSSL not found at %OPENSSL_DIR% & exit /b 1)",
+  "if \"%OPENSSL_NO_VENDOR%\"==\"1\" (if exist \"%OPENSSL_DIR%\" (echo OpenSSL found at %OPENSSL_DIR%) else (echo OpenSSL not found at %OPENSSL_DIR% & exit /b 1)) else (echo OpenSSL vendored build enabled; skipping system OpenSSL check.)",
 ]
 
 [tasks.install-openssl-prebuilt]
