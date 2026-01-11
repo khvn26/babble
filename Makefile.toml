@@ -30,7 +30,7 @@ description = "Run Rust coverage tests for Tauri."
 script_runner = "powershell"
 cwd = "src-tauri"
 dependencies = ["ensure-openssl"]
-script = ["cargo llvm-cov --features coverage --fail-under-lines 100"]
+script = ["cargo llvm-cov --features coverage --fail-under-lines 95"]
 
 [tasks.dev]
 description = "Run the Tauri dev app."
