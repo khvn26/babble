@@ -13,8 +13,8 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      - uses: davidB/rust-cargo-make@v1
-      - run: cargo make web-ci
+      - run: npm ci
+      - run: npm run ci
 
   tauri:
     runs-on: windows-latest
