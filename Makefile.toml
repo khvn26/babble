@@ -25,7 +25,7 @@ cwd = "src-tauri"
 dependencies = ["ensure-openssl"]
 script = ["cargo fmt -- --check", "cargo clippy -- -D warnings"]
 
-[tasks.test]
+[tasks.tauri-test]
 description = "Run Rust coverage tests for Tauri."
 script_runner = "powershell"
 cwd = "src-tauri"
@@ -40,4 +40,4 @@ script = ["cargo tauri dev"]
 
 [tasks.ci]
 description = "Run Tauri lint, build, and tests."
-dependencies = ["lint", "test"]
+dependencies = ["lint", "tauri-test"]
