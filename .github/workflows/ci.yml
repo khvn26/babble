@@ -5,6 +5,25 @@ on:
   pull_request:
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      tauri: ${{ steps.filter.outputs.tauri }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            tauri:
+              - "src-tauri/**"
+              - "Cargo.*"
+              - "Makefile.toml"
+              - "rust-toolchain.toml"
+              - ".github/workflows/ci.yml"
+
   node:
     runs-on: ubuntu-latest
     steps:
@@ -18,12 +37,22 @@ jobs:
 
   tauri:
     runs-on: windows-latest
+    needs: changes
+    if: needs.changes.outputs.tauri == 'true'
+    env:
+      CI_COVERAGE: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && '1' || '0' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: npm
+      - uses: actions/cache@v4
+        with:
+          path: C:\Users\runneradmin\.cargo\bin
+          key: ${{ runner.os }}-cargo-bin-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-bin-
       - uses: dtolnay/rust-toolchain@stable
       - uses: davidB/rust-cargo-make@v1
       - uses: arduino/setup-protoc@v3

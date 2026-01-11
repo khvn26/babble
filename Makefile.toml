@@ -23,14 +23,16 @@ description = "Run Rust formatting and clippy checks for Tauri."
 script_runner = "powershell"
 cwd = "src-tauri"
 dependencies = ["ensure-openssl"]
-script = ["cargo fmt -- --check", "cargo clippy -- -D warnings"]
+script = ["cargo fmt -- --check", "cargo clippy --no-deps -- -D warnings"]
 
 [tasks.tauri-test]
 description = "Run Rust coverage tests for Tauri."
 script_runner = "powershell"
 cwd = "src-tauri"
 dependencies = ["ensure-openssl"]
-script = ["cargo llvm-cov --features coverage --fail-under-lines 95"]
+script = [
+  "if ($env:CI_COVERAGE -eq \"1\") { cargo llvm-cov --features coverage --fail-under-lines 95 } else { cargo test --features coverage }",
+]
 
 [tasks.dev]
 description = "Run the Tauri dev app."
