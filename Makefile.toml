@@ -5,9 +5,9 @@ OPENSSL_DIR = "${OPENSSL_PREBUILT_DIR}"
 
 [tasks.ensure-openssl]
 description = "Validate the prebuilt OpenSSL install path."
-script_runner = "powershell"
+script_runner = "cmd"
 script = [
-  "if (-not (Test-Path $env:OPENSSL_DIR)) { throw \"OpenSSL not found at $env:OPENSSL_DIR\" }",
+  "if exist \"%OPENSSL_DIR%\" (echo OpenSSL found at %OPENSSL_DIR%) else (echo OpenSSL not found at %OPENSSL_DIR% & exit /b 1)",
 ]
 
 [tasks.install-openssl-prebuilt]
