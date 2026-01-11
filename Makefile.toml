@@ -27,9 +27,9 @@ script = ["cargo fmt -- --check", "cargo clippy -- -D warnings"]
 
 [tasks.ensure-tauri-cli]
 description = "Install the Tauri CLI if missing."
-script_runner = "powershell"
+script_runner = "cmd"
 script = [
-  "if (-not (Get-Command cargo-tauri -ErrorAction SilentlyContinue)) { cargo install tauri-cli --locked }",
+  "where cargo-tauri >nul 2>nul || cargo install tauri-cli --locked",
 ]
 
 [tasks.test]
